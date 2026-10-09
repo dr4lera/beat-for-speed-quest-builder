@@ -19,6 +19,8 @@ public sealed class QuestContent : ScriptableObject
     public TextAsset chartEffects;
     public Mesh[] fragmentMeshes;
     public AudioClip hitSound;
+    public GameObject crashPrefab;
+    public AudioClip crashSound;
 }
 [Serializable] public sealed class QuestChart
 {

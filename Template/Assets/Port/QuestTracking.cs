@@ -14,7 +14,7 @@ public sealed class QuestTracking : MonoBehaviour
     bool calibrated;
     Vector3 rawPose, neutralPose;
     Quaternion rawRotation = Quaternion.identity, neutralYaw = Quaternion.identity;
-    static readonly Vector3 RidingEye = new Vector3(0, 1.44064f, -.63f);
+    static readonly Vector3 RidingEye = new Vector3(0, 1.74544f, -.63f);
     float neutralControllerRoll;
     bool controllersCalibrated;
     InputAction position, rotation, tracked;

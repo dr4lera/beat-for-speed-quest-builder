@@ -45,7 +45,7 @@ public static class QuestBuild
     {
         PlayerSettings.companyName = "LocalPort";
         PlayerSettings.productName = "Beat For Speed Quest";
-        PlayerSettings.bundleVersion = "0.1.4.1";
+        PlayerSettings.bundleVersion = "0.1.4.4";
         PlayerSettings.colorSpace = ColorSpace.Linear;
         PlayerSettings.runInBackground = true;
         PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.zrock.beatforspeed.quest");
@@ -55,7 +55,7 @@ public static class QuestBuild
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
         PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel34;
         PlayerSettings.Android.applicationEntry = AndroidApplicationEntry.Activity;
-        PlayerSettings.Android.bundleVersionCode = 9;
+        PlayerSettings.Android.bundleVersionCode = 12;
         PlayerSettings.Android.forceSDCardPermission = false;
         PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
         PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.Vulkan });
@@ -131,8 +131,19 @@ public static class QuestBuild
         catalog.songs = source.songs.Select(s => new QuestSong { title = s.title, track = s.track,
             chart = AssetDatabase.LoadAssetAtPath<TextAsset>(s.chart), audio = AssetDatabase.LoadAssetAtPath<AudioClip>(s.audio) }).ToArray();
         if (catalog.songs.Any(s => s.chart == null || s.audio == null)) throw new Exception("Original song links missing");
-        catalog.forest = Prefab("ForestScene"); catalog.city = Prefab("CityScene"); catalog.cube = Prefab("MainCube"); catalog.sting = Prefab("Sting");
+        catalog.forest = Prefab("ForestScene"); catalog.city = Prefab("CityScene"); catalog.cube = Prefab("MainCube"); catalog.sting = MakeObstacleCar();
         catalog.bike = MakeBike();
+        catalog.crashPrefab = Prefab("HitExplode");
+        catalog.crashSound = AssetDatabase.LoadAssetAtPath<AudioClip>("Assets/Original/AudioClip/carcrash_GLTCH_SFX_Turech.wav");
+        if (catalog.crashPrefab == null || catalog.crashPrefab.GetComponentsInChildren<ParticleSystem>(true).Length == 0)
+            throw new Exception("Original crash particle systems are missing");
+        foreach (var renderer in catalog.crashPrefab.GetComponentsInChildren<ParticleSystemRenderer>(true))
+        {
+            var sourceMaterial = renderer.sharedMaterial;
+            var material = MaterialAsset("Crash_" + renderer.name, "QuestPort/Crash");
+            if (sourceMaterial != null && sourceMaterial != material) material.mainTexture = sourceMaterial.mainTexture;
+            renderer.sharedMaterial = material; EditorUtility.SetDirty(renderer);
+        }
         catalog.fragmentMaterial = MaterialAsset("Fragments", "QuestPort/Fragments");
         catalog.waterMaterial = MaterialAsset("CityWater", "QuestPort/Water");
         catalog.glowMaterial = MaterialAsset("ThemeGlow", "QuestPort/Glow");
@@ -162,6 +173,27 @@ public static class QuestBuild
     }
     [Serializable] class PrepareResult { public int songs, materials; }
     static GameObject Prefab(string name) => AssetDatabase.LoadAssetAtPath<GameObject>("Assets/Original/GameObject/" + name + ".prefab");
+    static GameObject MakeObstacleCar()
+    {
+        const string output = "Assets/Port/Generated/ObstacleCar.prefab";
+        var source = Prefab("Sedan_1A") ?? Prefab("Sedan_2A");
+        if (source == null) throw new Exception("Original traffic car model is missing");
+        var root = new GameObject("Original traffic car obstacle");
+        var model = UnityEngine.Object.Instantiate(source, root.transform);
+        model.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        model.SetActive(true);
+        var renderers = model.GetComponentsInChildren<Renderer>();
+        if (renderers.Length == 0) throw new Exception("Original traffic car has no visible mesh");
+        Bounds bounds = renderers[0].bounds; foreach (var r in renderers) bounds.Encapsulate(r.bounds);
+        // Preserve the original model's full scale, with a full sedan minimum length.
+        model.transform.localScale *= Mathf.Max(1, 4.8f / Mathf.Max(.01f, bounds.size.z));
+        bounds = renderers[0].bounds; foreach (var r in renderers) bounds.Encapsulate(r.bounds);
+        model.transform.position -= new Vector3(bounds.center.x, bounds.min.y, bounds.center.z);
+        foreach (var collider in root.GetComponentsInChildren<Collider>(true)) collider.enabled = false;
+        var prefab = PrefabUtility.SaveAsPrefabAsset(root, output);
+        Debug.Log($"BFSQUEST_CAR_OBSTACLE mesh={source.name} width={bounds.size.x:F2} length={bounds.size.z:F2}");
+        UnityEngine.Object.DestroyImmediate(root); return prefab;
+    }
     static Material MaterialAsset(string name, string shader)
     {
         string path = "Assets/Port/Generated/" + name + ".mat";

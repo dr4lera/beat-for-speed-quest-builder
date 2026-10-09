@@ -18,6 +18,7 @@ public sealed class QuestRide : MonoBehaviour
     Camera cameraRig;
     QuestGui gui;
     QuestBreakEffects effects;
+    QuestCrashEffects crashEffects;
     QuestChartEffects chartEffects;
     readonly List<QuestSong> library = new List<QuestSong>();
     readonly List<LiveNote> notes = new List<LiveNote>();
@@ -28,6 +29,7 @@ public sealed class QuestRide : MonoBehaviour
     float[] distances;
     float pathLength, speed, songStartOffset, songOffset, riderOffset, nextImmune, accuracySum;
     float riderVelocity, nextHudUpdate;
+    const float LaneSpacing = 1.5f, SteeringRange = 3.1f, BikeHalfWidth = .15f;
     float[] speedTimes, speedDistances, speedMultipliers;
     int effectCursor;
     double startDsp;
@@ -46,7 +48,7 @@ public sealed class QuestRide : MonoBehaviour
     Material uiMaterial;
     GameObject reticle;
     LineRenderer pointerLine;
-    class LiveNote { public QuestEntity e; public GameObject obj; public float time; public bool obstacle; }
+    class LiveNote { public QuestEntity e; public GameObject obj; public float time, lateralCenter, hitRadius, hitDuration; public bool obstacle; }
     float SongTime => (float)(AudioSettings.dspTime - startDsp);
 
     void Awake()
@@ -57,10 +59,10 @@ public sealed class QuestRide : MonoBehaviour
         QualitySettings.shadows = ShadowQuality.Disable;
         RenderSettings.ambientMode = AmbientMode.Flat; RenderSettings.ambientLight = new Color(.65f, .68f, .72f);
         RenderSettings.fog = true; RenderSettings.fogColor = new Color(.12f, .19f, .24f); RenderSettings.fogMode = FogMode.Linear;
-        RenderSettings.fogStartDistance = 65; RenderSettings.fogEndDistance = 145;
+        RenderSettings.fogStartDistance = 110; RenderSettings.fogEndDistance = 205;
         origin = new GameObject("Ride Origin").transform;
         head = new GameObject("Head").transform; head.SetParent(origin, false); head.localPosition = new Vector3(0, 1.5f, 0);
-        cameraRig = head.gameObject.AddComponent<Camera>(); cameraRig.nearClipPlane = .08f; cameraRig.farClipPlane = 160;
+        cameraRig = head.gameObject.AddComponent<Camera>(); cameraRig.nearClipPlane = .08f; cameraRig.farClipPlane = 220;
         RenderSettings.skybox = content.skyMaterial;
         if (content.skyMaterial != null) Shader.SetGlobalTexture("_QuestReflection", content.skyMaterial.GetTexture("_Tex"));
         cameraRig.clearFlags = CameraClearFlags.Skybox; cameraRig.backgroundColor = RenderSettings.fogColor;
@@ -71,6 +73,7 @@ public sealed class QuestRide : MonoBehaviour
         panel = new GameObject("Quest Menu").transform;
         gui = new QuestGui(panel, origin, content.canvasMaterial, TogglePause);
         effects = new GameObject("Note breaks").AddComponent<QuestBreakEffects>(); effects.Setup(content);
+        crashEffects = origin.gameObject.AddComponent<QuestCrashEffects>(); crashEffects.Setup(content);
         reticle = GameObject.CreatePrimitive(PrimitiveType.Sphere); Destroy(reticle.GetComponent<Collider>());
         reticle.transform.localScale = Vector3.one * .025f;
         reticle.GetComponent<Renderer>().material = new Material(content.uiMaterial) { color = Color.cyan };
@@ -219,10 +222,10 @@ public sealed class QuestRide : MonoBehaviour
             if (smoke)
             {
                 foreach (var e in chart.entities)
-                    if (Collectible(e) && EventTime(e) >= time) { smokeBestOffset = (e.key - 7) * 1.2f; break; }
-                steer = Mathf.Clamp(smokeBestOffset / 2.5f, -1, 1);
+                    if (Collectible(e) && EventTime(e) >= time) { smokeBestOffset = (e.key - 7) * LaneSpacing; break; }
+                steer = Mathf.Clamp(smokeBestOffset / SteeringRange, -1, 1);
             }
-            riderOffset = Mathf.SmoothDamp(riderOffset, steer * 2.5f, ref riderVelocity, .085f, 15, Time.deltaTime);
+            riderOffset = Mathf.SmoothDamp(riderOffset, steer * SteeringRange, ref riderVelocity, .085f, 15, Time.deltaTime);
             while(effectCursor < chart.entities.Length && EventTime(chart.entities[effectCursor]) <= time)
             {
                 var e = chart.entities[effectCursor++];
@@ -240,25 +243,30 @@ public sealed class QuestRide : MonoBehaviour
                 GameObject obj = pool.Count > 0 ? pool.Dequeue() : Instantiate(prefab);
                 Sample(songStartOffset + DistanceAt(EventTime(e)), out var p, out var direction);
                 var rotation = Quaternion.LookRotation(direction);
-                obj.transform.position = p + rotation * Vector3.right * ((e.key - 7) * (obstacle ? 1 : 1.2f)) + Vector3.up * .5f;
+                obj.transform.position = p + rotation * Vector3.right * ((e.key - 7) * LaneSpacing) + Vector3.up * (obstacle ? 0 : .5f);
                 obj.transform.rotation = rotation; obj.SetActive(true);
+                if (obstacle) ShowObstacle(obj);
                 foreach (var c in obj.GetComponentsInChildren<Collider>()) c.enabled = false;
-                notes.Add(new LiveNote { e = e, obj = obj, time = EventTime(e), obstacle = obstacle });
+                var obstacleBounds = obstacle ? ObstacleBounds(obj) : new Bounds();
+                notes.Add(new LiveNote { e = e, obj = obj, time = EventTime(e), obstacle = obstacle,
+                    lateralCenter = (e.key - 7) * LaneSpacing + (obstacle ? obstacleBounds.center.x : 0),
+                    hitRadius = obstacle ? obstacleBounds.extents.x + BikeHalfWidth : 1.2f,
+                    hitDuration = obstacle ? (obstacleBounds.extents.z + 1.1f) / Mathf.Max(1, SpeedAt(EventTime(e))) : 0 });
             }
             for (int i = notes.Count - 1; i >= 0; i--)
             {
                 var n = notes[i]; float dt = time - n.time;
-                float delta = Mathf.Abs(riderOffset - (n.e.key - 7) * (n.obstacle ? 1 : 1.2f));
-                if (dt >= -.04f && dt <= .08f && delta <= (n.obstacle ? .65f : 1.2f))
+                float delta = Mathf.Abs(riderOffset - n.lateralCenter);
+                if (dt >= -(n.obstacle ? n.hitDuration : .04f) && dt <= (n.obstacle ? n.hitDuration : .08f) && delta <= n.hitRadius)
                 {
-                    if (n.obstacle) { combo = 0; if (time >= nextImmune) { hp -= 30; nextImmune = time + 2; } }
+                    if (n.obstacle) { combo = 0; if (time >= nextImmune && n.obj.GetComponentInChildren<Renderer>() != null) { hp = Mathf.Max(0, hp - 30); crashEffects.Impact(); nextImmune = time + 2; Debug.Log($"BFSQUEST_OBSTACLE_HIT time={time:F3} lane={n.e.key} rider={riderOffset:F3} delta={delta:F3} hp={hp:F0}"); } }
                     else {
                         effects.Break(n.obj.transform.position, origin.forward, delta <= .6f, SpeedAt(time)); Judge(delta <= .6f ? 1 : .3f);
                         if (smoke && !capturedBreak) { capturedBreak = true; StartCoroutine(CaptureBreak()); }
                     }
                     ReturnNote(n); notes.RemoveAt(i);
                 }
-                else if (dt > .08f)
+                else if (dt > (n.obstacle ? n.hitDuration : .08f))
                 { if (!n.obstacle) Judge(0); ReturnNote(n); notes.RemoveAt(i); }
             }
             if (Time.unscaledTime >= nextHudUpdate)
@@ -351,6 +359,34 @@ public sealed class QuestRide : MonoBehaviour
         var obj = Instantiate(prefab); obj.SetActive(false);
         foreach (var c in obj.GetComponentsInChildren<Collider>(true)) c.enabled = false;
         pool.Enqueue(obj);
+    }
+    // The stock Sting's Container starts inactive; its original game script enables it.
+    // The standalone runtime must expose the same mesh before judging a collision.
+    static void ShowObstacle(GameObject obj)
+    {
+        foreach (var renderer in obj.GetComponentsInChildren<Renderer>(true))
+        {
+            renderer.enabled = true;
+            for (var child = renderer.transform; child != obj.transform; child = child.parent)
+                child.gameObject.SetActive(true);
+        }
+    }
+    static Bounds ObstacleBounds(GameObject obj)
+    {
+        var bounds = new Bounds(); bool first = true;
+        foreach (var mesh in obj.GetComponentsInChildren<MeshFilter>())
+        {
+            if (mesh.sharedMesh == null) continue;
+            var local = mesh.sharedMesh.bounds;
+            var matrix = obj.transform.worldToLocalMatrix * mesh.transform.localToWorldMatrix;
+            for (int i = 0; i < 8; i++)
+            {
+                var corner = local.center + Vector3.Scale(local.extents, new Vector3((i & 1) == 0 ? -1 : 1, (i & 2) == 0 ? -1 : 1, (i & 4) == 0 ? -1 : 1));
+                var point = matrix.MultiplyPoint3x4(corner);
+                if (first) { bounds = new Bounds(point, Vector3.zero); first = false; } else bounds.Encapsulate(point);
+            }
+        }
+        return bounds;
     }
     void ReturnNote(LiveNote n) { n.obj.SetActive(false); (n.obstacle ? stings : cubes).Enqueue(n.obj); }
     void ClearNotes() { foreach (var n in notes) if (n.obj != null) ReturnNote(n); notes.Clear(); }

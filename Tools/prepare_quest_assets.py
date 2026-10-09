@@ -47,7 +47,7 @@ for prefab in assets.rglob('*.prefab'):
     removed, keep = set(), []
     for block in blocks:
         h = re.match(r'--- !u!(\d+) &(\d+)', block)
-        if h and int(h[1]) in (114, 95, 82, 20, 120, 198, 199, 328, 329):
+        if h and int(h[1]) in (114, 95, 82, 20, 120, 198, 199, 328, 329) and not (prefab.name == 'HitExplode.prefab' and int(h[1]) in (198, 199)):
             if int(h[1]) == 114 and path_guid in block:
                 keep.append(block)
             else:

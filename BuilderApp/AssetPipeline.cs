@@ -88,7 +88,8 @@ public class AssetPipeline(Action<string> log)
             var text=File.ReadAllText(prefab); var removedIds=new HashSet<long>();
             text=Headers.Replace(text,match=> {
                 int kind=int.Parse(match.Groups[1].Value);
-                if(strip.Contains(kind) && !(kind==114 && match.Value.Contains(pointGuid))) {removedIds.Add(long.Parse(match.Groups[2].Value));return "";}
+                bool crashParticle=Path.GetFileName(prefab)=="HitExplode.prefab" && (kind==198 || kind==199);
+                if(strip.Contains(kind) && !crashParticle && !(kind==114 && match.Value.Contains(pointGuid))) {removedIds.Add(long.Parse(match.Groups[2].Value));return "";}
                 return match.Value;
             });
             text=Regex.Replace(text,@"^  - component: \{fileID: (-?\d+)\}[^\S\r\n]*\r?\n",m=>removedIds.Contains(long.Parse(m.Groups[1].Value))?"":m.Value,RegexOptions.Multiline);

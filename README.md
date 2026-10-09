@@ -22,6 +22,7 @@ The GUI links directly to setup help for missing tools. Unity remains required t
 - Quest shading, colored block shards/sparks, chart-driven colors and glows, City water.
 - Corrected startup heading, seat offset and Quest recenter behavior.
 - Local file picker for custom ZIP/BFS1 `.bfs` song packs and asynchronous importing.
+- Visible obstacles and collision widths matched to their meshes. Songs start at 100 HP and end at zero health; missed notes do not damage health.
 - Android ARM64, Vulkan stereo rendering, mobile texture settings and adaptive render scale.
 
 This is a reconstructed Quest runtime, rather than the complete desktop executable. Live audio mode is excluded. Desktop bloom/volumetric/blur effects are approximated for Quest; legacy cutpoint events without a recovered prefab mapping are not reproduced. Experimental BFS1 events are skipped. Performance depends on chart density and headset conditions; constant framerate is not guaranteed.

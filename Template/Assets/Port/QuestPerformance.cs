@@ -7,17 +7,18 @@ public sealed class QuestPerformance : MonoBehaviour
     public Camera view;
     float average, stable, nextAdjust;
     float maxScale = .85f, minScale = .65f;
-    float maxDistance = 160;
+    float maxDistance = 220;
     void Start()
     {
         string model = SystemInfo.deviceModel.ToLowerInvariant();
         bool quest3 = model.Contains("quest 3") || model.Contains("eureka");
-        if (quest3) { maxScale = 1.05f; minScale = .8f; maxDistance = 210; }
+        if (quest3) { maxScale = 1.05f; minScale = .8f; maxDistance = 280; }
         QualitySettings.lodBias = quest3 ? 1.25f : .8f;
         XRSettings.renderViewportScale = Mathf.Min(1, maxScale);
         view.farClipPlane = maxDistance;
         average = 1f / 72; nextAdjust = Time.realtimeSinceStartup + 12;
         RenderSettings.fogEndDistance = maxDistance - 15;
+        RenderSettings.fogStartDistance = maxDistance * .5f;
         Debug.Log("BFSQUEST_QUALITY model=" + SystemInfo.deviceModel + " scale=" + maxScale + " distance=" + maxDistance);
     }
     void OnApplicationFocus(bool focus)

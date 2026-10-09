@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.0.1
+
+- Quest runtime 0.1.4.4 fixes invisible obstacle meshes that caused unexpected HP loss.
+- Full-size original sedans replace bomb obstacles. Unified lane spacing and a narrower rider hit area make gaps rideable.
+- Original crash particles and glitch crash audio now play on obstacle impacts.
+- Adaptive view distance increased to 220 m on Quest Pro and 280 m on Quest 3.
+- Seat height is one foot higher, including after recentering.
+- Health starts at 100, cannot become negative, and zero HP still ends the ride.
+
 ## 1.0.0
 
 - Windows self-contained Quest APK builder GUI.

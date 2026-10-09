@@ -1,5 +1,15 @@
 # Verification
 
+## Builder 1.0.1 / Quest 0.1.4.4
+
+- Release EXE and its embedded source template compile; the template content audit passes with no game files included.
+- Fresh playtest content preparation and APK compilation passed through the released builder. The updated C# asset pipeline was then run again on the original export, preserving both HitExplode particle systems/renderers while removing desktop scripts; the final runtime rebuilt successfully in that project.
+- Final builder-project APK signing verification passes (APK Signature Scheme v2). Four songs, 1,238 chart events and 943 scoring notes pass editor validation.
+- Obstacle diagnosis reproduced zero visible Sting renderers before the fix and two afterward. Health validation confirms 100 starting HP and 100 HP after 100 missed notes.
+- Final cars use the original sedan's full dimensions (2.42 m wide / 5.41 m long). Shared 1.5 m chart lane spacing, mesh-derived obstacle collision and a 0.30 m rider body hit width leave room through a two-lane car gap.
+- Personal APK 0.1.4.4 installed and relaunched on Quest Pro; desktop APK replaced. Latest car spacing/crash effects/distance adjustments await the user's headset feedback. Quest 3 has not been physically tested. Adaptive maximum draw distance is 220 m on Pro and 280 m on Quest 3; load can reduce it.
+- The same runtime source is embedded in the GUI builder. The Steam demo contains the required original sedan and effect assets; prior fresh demo end-to-end checks are recorded below.
+
 ## Builder 1.0.0 checks
 
 - Windows self-contained release EXE compiles successfully with .NET SDK 10.

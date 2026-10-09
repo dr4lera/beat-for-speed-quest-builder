@@ -12,6 +12,11 @@ static class Program
         if(Arg("--ui-smoke") is { } ui)
         {using var form=new MainForm();form.SaveUiSmoke(ui);return 0;}
         if(args.Contains("--detect-steam")) {Console.WriteLine(JsonSerializer.Serialize(GameDiscovery.DetectSteam()));return 0;}
+        if(args.Contains("--download-extractor"))
+        {
+            try { Console.WriteLine(ToolDownload.DownloadExtractor(Console.WriteLine,CancellationToken.None).GetAwaiter().GetResult());return 0; }
+            catch(Exception ex) {Console.Error.WriteLine(ex.Message);return 1;}
+        }
         if(Arg("--game") is { } game)
         {
             var work=Arg("--work") ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"BeatForSpeedQuestBuilder","Builds");

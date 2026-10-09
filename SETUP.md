@@ -20,10 +20,11 @@ With Unity's SDK manager installed, run this command in PowerShell, adjusting th
 
 ```powershell
 $bfsEditor = 'C:\Program Files\Unity\Hub\Editor\6000.3.3f1\Editor'
+$env:JAVA_HOME = "$bfsEditor\Data\PlaybackEngines\AndroidPlayer\OpenJDK"
 & "$bfsEditor\Data\PlaybackEngines\AndroidPlayer\SDK\cmdline-tools\latest\bin\sdkmanager.bat" --sdk_root="$bfsEditor\Data\PlaybackEngines\AndroidPlayer\SDK" 'platforms;android-34'
 ```
 
-SDK command-line tools sometimes use a versioned folder instead of `latest`; choose the `bin/sdkmanager.bat` actually present under `cmdline-tools`. Accept the Android licenses when prompted. Follow [Android's official sdkmanager documentation](https://developer.android.com/tools/sdkmanager) if the tools are missing.
+SDK command-line tools sometimes use a versioned folder instead of `latest`; choose the `bin/sdkmanager.bat` actually present under `cmdline-tools`. Accept the Android licenses when prompted. If Windows denies writes into the editor's SDK folder, run that installation command from an administrator PowerShell. Follow [Android's official sdkmanager documentation](https://developer.android.com/tools/sdkmanager) if the tools are missing. The command above uses the tools bundled with this Unity version.
 
 If the missing file is `NDK/source.properties` or `OpenJDK/bin/java.exe`, return to Unity Hub → Add modules and install the corresponding bundled Android component.
 

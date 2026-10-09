@@ -23,14 +23,14 @@ public sealed class MainForm : Form
         var header=new Panel {Dock=DockStyle.Fill};
         header.Controls.Add(new Label {Text="Build your Quest APK",Font=new Font("Segoe UI",23,FontStyle.Bold),AutoSize=true,Location=new Point(0,0)});
         header.Controls.Add(new Label {Text="Use your installed Beat For Speed copy · Quest Pro + Quest 3",AutoSize=true,ForeColor=Color.FromArgb(153,174,191),Location=new Point(2,45)});layout.Controls.Add(header,0,0);
-        layout.Controls.Add(InputRow("Game EXE or installation folder",game,"Browse game EXE",()=>BrowseExe(game),"Detect Steam install",DetectSteam,true),0,1);
+        layout.Controls.Add(InputRow("Game EXE or installation folder",game,"Browse game",()=>BrowseExe(game),"Detect Steam",DetectSteam,true),0,1);
         layout.Controls.Add(InputRow("Unity 6000.3.3f1 with Android Build Support",unity,"Browse Unity",()=>BrowseExe(unity),"Get Unity + setup",()=>Open("https://github.com/dr4lera/beat-for-speed-quest-builder/blob/main/SETUP.md#unity-and-android-tools")),0,2);
-        layout.Controls.Add(InputRow("AssetRipper 2.0.0",ripper,"Browse extractor",()=>BrowseExe(ripper),"Download extractor",Download),0,3);
+        layout.Controls.Add(InputRow("AssetRipper 2.0.0",ripper,"Browse extractor",()=>BrowseExe(ripper),"Download",Download),0,3);
         layout.Controls.Add(InputRow("Save Quest APK to",output,"Choose output",BrowseOutput,"Android SDK help",()=>Open("https://github.com/dr4lera/beat-for-speed-quest-builder/blob/main/SETUP.md#missing-android-sdk-platform-34")),0,4);
         var buttons=new FlowLayoutPanel {Dock=DockStyle.Fill,FlowDirection=FlowDirection.LeftToRight};
         build.Text="Build APK";build.Width=170;build.Height=44;build.BackColor=accent;build.ForeColor=Color.FromArgb(8,24,27);build.FlatStyle=FlatStyle.Flat;build.Font=new Font(Font,FontStyle.Bold);build.Click+=Build;
         cancel.Text="Cancel build";cancel.Width=140;cancel.Height=44;cancel.Enabled=false;Style(cancel);cancel.Click+=(_,_)=>cancellation?.Cancel();
-        var folder=new Button {Text="Open output folder",Width=175,Height=44};Style(folder);folder.Click+=(_,_)=>OpenOutput();
+        var folder=new Button {Text="Open output",Width=175,Height=44};Style(folder);folder.Click+=(_,_)=>OpenOutput();
         buttons.Controls.AddRange([build,cancel,folder]);layout.Controls.Add(buttons,0,5);
         var state=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=1,RowCount=2};state.RowStyles.Add(new RowStyle(SizeType.Absolute,24));state.RowStyles.Add(new RowStyle(SizeType.Absolute,12));
         status.Text="Choose a game copy, then build locally.";status.Dock=DockStyle.Fill;progress.Dock=DockStyle.Fill;state.Controls.Add(status);state.Controls.Add(progress);layout.Controls.Add(state,0,6);

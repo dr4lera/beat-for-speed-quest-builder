@@ -24,6 +24,8 @@ public class BuildEngine
         var workRoot = Path.GetFullPath(options.WorkRoot); var output = Path.GetFullPath(options.Output);
         if (Inside(workRoot, game) || Inside(output, game)) throw new InvalidOperationException("Choose build/output folders outside the game installation.");
         if (!File.Exists(options.Unity)) throw new FileNotFoundException("Select the installed Unity 6000.3.3f1 editor.");
+        if (!(FileVersionInfo.GetVersionInfo(options.Unity).ProductVersion ?? "").StartsWith("6000.3.3f1",StringComparison.Ordinal))
+            throw new InvalidOperationException("Use Unity 6000.3.3f1 to preserve this port's build configuration. Open Get Unity + setup for the exact editor download.");
         var android = Path.Combine(Path.GetDirectoryName(options.Unity)!, "Data", "PlaybackEngines", "AndroidPlayer");
         foreach (var required in new[] { "SDK/platforms/android-34/android.jar", "NDK/source.properties", "OpenJDK/bin/java.exe" })
             if (!File.Exists(Path.Combine(android, required.Replace('/',Path.DirectorySeparatorChar))))

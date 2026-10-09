@@ -17,5 +17,7 @@
   <ItemGroup>
     <PackageReference Include="YamlDotNet" Version="16.3.0" />
     <EmbeddedResource Include="../payload.zip" LogicalName="QuestBuilder.Payload.zip" />
+    <EmbeddedResource Include="../licenses/*.txt" />
+    <EmbeddedResource Include="../LICENSE" LogicalName="QuestBuilder.License" />
   </ItemGroup>
 </Project>

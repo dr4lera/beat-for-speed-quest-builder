@@ -1,0 +1,16 @@
+BuilderApp/bin/
+BuilderApp/obj/
+.packages/
+payload.zip
+release/
+work/
+*.apk
+*.bfs
+**/Library/
+**/Assets/Original/
+**/Assets/Port/Generated/
+**/ChartEffects.json
+**/catalog-source.json
+**/FreshExport/
+**/RecoveredIL/
+**/ExactDecompiled/

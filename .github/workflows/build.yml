@@ -1,0 +1,28 @@
+name: Build Windows builder
+on:
+  push:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      - run: python Tools/make_payload.py
+      - run: dotnet publish BuilderApp/BuilderApp.csproj -c Release -o release/win-x64
+      - name: Include notices and setup
+        shell: pwsh
+        run: |
+          Copy-Item README.md,SETUP.md,LICENSE,THIRD-PARTY.md release/win-x64
+          Copy-Item licenses release/win-x64 -Recurse
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BeatForSpeedQuestBuilder-win-x64
+          path: release/win-x64

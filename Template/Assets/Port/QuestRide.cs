@@ -63,6 +63,7 @@ public sealed class QuestRide : MonoBehaviour
         origin = new GameObject("Ride Origin").transform;
         head = new GameObject("Head").transform; head.SetParent(origin, false); head.localPosition = new Vector3(0, 1.5f, 0);
         cameraRig = head.gameObject.AddComponent<Camera>(); cameraRig.nearClipPlane = .08f; cameraRig.farClipPlane = 220;
+        XRDevice.DisableAutoXRCameraTracking(cameraRig, true);
         RenderSettings.skybox = content.skyMaterial;
         if (content.skyMaterial != null) Shader.SetGlobalTexture("_QuestReflection", content.skyMaterial.GetTexture("_Tex"));
         cameraRig.clearFlags = CameraClearFlags.Skybox; cameraRig.backgroundColor = RenderSettings.fogColor;
@@ -476,3 +477,5 @@ public sealed class QuestRide : MonoBehaviour
     }
 }
 public sealed class QuestMenuItem : MonoBehaviour { public Action action; public Image graphic; public RectTransform progressBar; public float buttonWidth; }
+
+

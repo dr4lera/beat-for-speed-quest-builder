@@ -38,7 +38,7 @@ public class BuildEngine
         var initialMetadata = Hash(metadataFile);
         Log("Checking local game files. " + game);
         var source = new { gameAssemblySha256=initialAssembly, metadataSha256=initialMetadata,
-            demoBuildTested="25225340", portVersion="0.1.4.4" };
+            demoBuildTested="25225340", portVersion="0.1.4.5" };
         File.WriteAllText(Path.Combine(JobFolder,"source-provenance.json"),JsonSerializer.Serialize(source,new JsonSerializerOptions{WriteIndented=true}));
         var project = Path.Combine(JobFolder,"QuestProject");
         Directory.CreateDirectory(project);

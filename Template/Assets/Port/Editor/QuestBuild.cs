@@ -45,7 +45,7 @@ public static class QuestBuild
     {
         PlayerSettings.companyName = "LocalPort";
         PlayerSettings.productName = "Beat For Speed Quest";
-        PlayerSettings.bundleVersion = "0.1.4.4";
+        PlayerSettings.bundleVersion = "0.1.4.5";
         PlayerSettings.colorSpace = ColorSpace.Linear;
         PlayerSettings.runInBackground = true;
         PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.Android, "com.zrock.beatforspeed.quest");
@@ -55,7 +55,7 @@ public static class QuestBuild
         PlayerSettings.Android.minSdkVersion = AndroidSdkVersions.AndroidApiLevel29;
         PlayerSettings.Android.targetSdkVersion = AndroidSdkVersions.AndroidApiLevel34;
         PlayerSettings.Android.applicationEntry = AndroidApplicationEntry.Activity;
-        PlayerSettings.Android.bundleVersionCode = 12;
+        PlayerSettings.Android.bundleVersionCode = 13;
         PlayerSettings.Android.forceSDCardPermission = false;
         PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android, false);
         PlayerSettings.SetGraphicsAPIs(BuildTarget.Android, new[] { GraphicsDeviceType.Vulkan });

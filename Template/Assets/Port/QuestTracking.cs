@@ -14,7 +14,7 @@ public sealed class QuestTracking : MonoBehaviour
     bool calibrated;
     Vector3 rawPose, neutralPose;
     Quaternion rawRotation = Quaternion.identity, neutralYaw = Quaternion.identity;
-    static readonly Vector3 RidingEye = new Vector3(0, 1.74544f, -.63f);
+    static readonly Vector3 RidingEye = new Vector3(0, 2.05024f, -.63f);
     float neutralControllerRoll;
     bool controllersCalibrated;
     InputAction position, rotation, tracked;
@@ -65,6 +65,7 @@ public sealed class QuestTracking : MonoBehaviour
         neutralX = head.localPosition.x;
         neutralRoll = Mathf.DeltaAngle(0, head.localEulerAngles.z);
         calibrated = Tracked; Steering = 0;
+        Debug.Log("BFSQUEST_RECENTER eye=" + head.localPosition + " tracked=" + Tracked);
         neutralControllerRoll = ControllerRoll(); controllersCalibrated = false;
     }
     public void CycleMode() { mode = (SteeringMode)(((int)mode + 1) % 3); PlayerPrefs.SetInt("Quest.SteeringMode", (int)mode); Recenter(); }
